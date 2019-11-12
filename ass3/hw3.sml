@@ -67,3 +67,21 @@ fun longest_capitalized strlst =
 fun rev_string str =
     (implode o rev o explode) str
     
+fun first_answer f lst =
+    case lst of
+        [] => raise NoAnswer
+        | h::t => case f h of
+            NONE => first_answer f t
+            | SOME v => v
+
+fun all_answers f lst =
+    let
+        fun helper lst acc =
+            case lst of
+                [] => acc
+                | h::t => case f h of
+                    NONE => NONE
+                    | SOME l => helper t (SOME l @ acc)
+    in
+        helper lst (SOME [])
+    end
