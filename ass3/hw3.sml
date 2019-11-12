@@ -43,11 +43,10 @@ fun longest_string1 (strlst) =
     foldl (fn (str1, str2) => if String.size(str1) > String.size(str2) then str1 else str2) "" strlst
 
 fun longest_string2 (strlst) =
-    foldr (fn (str1, str2) => if String.size(str1) > String.size(str2) then str1 else str2) "" strlst
+    foldl (fn (str1, str2) => if String.size(str1) >= String.size(str2) then str1 else str2) "" strlst
 
 fun longest_string_helper f strlst =
-    foldl f "" strlst
-    (*let
+    let
         fun helper strlst result =
             case strlst of
                 [] => result
@@ -56,9 +55,15 @@ fun longest_string_helper f strlst =
                 else helper t result
     in
         helper strlst ""
-    end*)
+    end
 
 val longest_string3 = longest_string_helper (fn (len1, len2) => len1 > len2)
 
-val longest_string4 = longest_string_helper (fn (len1, len2) => len1 < len2)
+val longest_string4 = longest_string_helper (fn (len1, len2) => len1 >= len2)
 
+fun longest_capitalized strlst = 
+    (longest_string3 o only_capitals) strlst
+
+fun rev_string str =
+    (implode o rev o explode) str
+    
