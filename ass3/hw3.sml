@@ -78,10 +78,33 @@ fun all_answers f lst =
     let
         fun helper lst acc =
             case lst of
-                [] => acc
+                [] => SOME acc
                 | h::t => case f h of
                     NONE => NONE
-                    | SOME l => helper t (SOME l @ acc)
+                    | SOME l => helper t (acc@l)
     in
-        helper lst (SOME [])
+        helper lst []
+    end
+
+fun count_wildcards p =
+    g (fn () => 1) (fn x => 0) p 
+
+fun count_wild_and_variable_lengths p =
+    g (fn () => 1) (fn x => String.size(x)) p
+
+fun count_some_var (str, p) =
+   g (fn () => 0) (fn s => if s = str then 1 else 0) p 
+
+fun check_pat p =
+    let
+        fun create_list p =
+            case p of
+            Variable s => [s]
+            | TupleP ps => 
+                List.foldl (fn (pat, acc) => acc@(create_list pat)) [] ps
+            | ConstructorP (str, pat) =>
+                [str]@(create_list pat)
+            | _ => []
+    in
+        create_list p
     end
