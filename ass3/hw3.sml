@@ -105,6 +105,23 @@ fun check_pat p =
             | ConstructorP (str, pat) =>
                 [str]@(create_list pat)
             | _ => []
+        fun check_list lst =
+            case lst of
+            [] => true
+            | h::t => if List.exists (fn e => h = e) t 
+                then false 
+                else check_list t
     in
-        create_list p
+        check_list (create_list p)
     end
+
+fun match (v, p) =
+    case (p, v) of
+    (Wildcard, _)=> SOME []
+    | (Variable s, _) => SOME [(s, v)]
+    | (UnitP, Unit) => SOME []
+    | (ConstP cp, Const cv) => if cp = cv then SOME [] else NONE
+    | (TupleP ps, Tuple vs) => 
+        if List.length(ps) = List.length(vs) 
+        andalso ListPair.zip(ps, vs)
+                    
