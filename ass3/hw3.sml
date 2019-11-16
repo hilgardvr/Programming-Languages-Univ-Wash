@@ -123,5 +123,15 @@ fun match (v, p) =
     | (ConstP cp, Const cv) => if cp = cv then SOME [] else NONE
     | (TupleP ps, Tuple vs) => 
         if List.length(ps) = List.length(vs) 
-        andalso ListPair.zip(ps, vs)
-                    
+        then all_answers (fn (p,v) => match (v, p)) (ListPair.zip(ps,vs))
+        else NONE
+    | (ConstructorP (s1, p), Constructor (s2, v)) =>
+        if s1 = s2
+        then match (v, p)
+        else NONE
+    | _ => NONE
+
+fun first_match v ps =
+    SOME (first_answer (fn p => match (v, p)) ps)
+    handle NoAnswer => NONE
+    
