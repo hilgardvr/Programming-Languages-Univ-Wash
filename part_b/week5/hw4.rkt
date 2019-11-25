@@ -32,8 +32,12 @@
                 (if (= (remainder x 5) 0)
                     (cons (- 0 x) (lambda () (f (+ x 1))))
                     (cons x (lambda () (f (+ x 1))))))])
-    (f 1)))
+    (lambda () (f 1))))
                     
-            
-            
+(define dan-then-dog
+  (letrec ([f (lambda (x)
+                (if (string=? x "dog.jpg")
+                    (cons "dan.jpg" (lambda () (f "dan.jpg")))
+                    (cons "dog.jpg" (lambda () (f "dog.jpg")))))])
+    (lambda () (f "dog.jpg"))))
       
