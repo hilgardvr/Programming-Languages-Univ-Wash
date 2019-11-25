@@ -17,10 +17,23 @@
         [(< n 0) (error "list-nth-mod: negative number")]
         [#t (letrec ([len (length xs)]
                      [rem (remainder n len)]
-                     [fun (lambda (xss n)
-                          (cond [(= n 0) (car xss)]
-                                [#t (fun (cdr xss) (- n 1))]))])
+                     [fun (lambda (xs n)
+                          (cond [(= n 0) (car xs)]
+                                [#t (fun (cdr xs) (- n 1))]))])
               (fun xs rem))]))
+
+(define (stream-for-n-steps s n)
+  (if (= n 0)
+      null
+      (cons (car (s)) (stream-for-n-steps (cdr (s)) (- n 1)))))
+
+(define funny-number-stream
+  (letrec ([f (lambda (x)
+                (if (= (remainder x 5) 0)
+                    (cons (- 0 x) (lambda () (f (+ x 1))))
+                    (cons x (lambda () (f (+ x 1))))))])
+    (f 1)))
+                    
             
             
       
