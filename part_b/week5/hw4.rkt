@@ -40,4 +40,10 @@
                     (cons "dan.jpg" (lambda () (f "dan.jpg")))
                     (cons "dog.jpg" (lambda () (f "dog.jpg")))))])
     (lambda () (f "dog.jpg"))))
+
+(define (stream-add-zero s)
+  (letrec ([f (lambda (x)
+                (cons (cons 0 (car (x))) (lambda () (f (cdr (x))))))])
+    (lambda () (f s))))
+
       
