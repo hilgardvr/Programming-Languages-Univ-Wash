@@ -64,14 +64,14 @@
   (letrec ([vec (make-vector n #f)]
            [ctr 0]
            [f (lambda (v)
-                (let pair_or_false (vector-assoc v vec)
-                  (cond [(pair_or_false) (begin (print "pair found in vector") pair_or_false)]
-                        [(let as (assoc v xs))
-                         (if (as)
+                (let ([pair_or_false (vector-assoc v vec)])
+                  (cond [pair_or_false (begin (print "pair found in vector") pair_or_false)]
+                        [(let ([as (assoc v xs)])
+                         (if as
                              (begin (vector-set! vec ctr v)
                                     (set! ctr (remainder (+ ctr 1) n))
                                     as)
-                             as)])))])
+                             as))])))])
     (lambda (v) (f v))))
   
 
