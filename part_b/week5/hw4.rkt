@@ -51,3 +51,27 @@
                 (cons (cons (list-nth-mod xs n) (list-nth-mod ys n)) (lambda () (f (+ n 1)))))])
     (lambda () (f 0))))
 
+(define (vector-assoc v vec)
+  (letrec ([f (lambda (i)
+                 (if (= i (vector-length vec))
+                     #f
+                     (if (and (pair? (vector-ref vec i)) (equal? (car (vector-ref vec i)) v))
+                            (vector-ref vec i)
+                            (f (+ i 1)))))])
+           (f 0)))
+
+(define (cached-assoc xs n)
+  (letrec ([vec (make-vector n #f)]
+           [ctr 0]
+           [f (lambda (v)
+                (let pair_or_false (vector-assoc v vec)
+                  (cond [(pair_or_false) (begin (print "pair found in vector") pair_or_false)]
+                        [(let as (assoc v xs))
+                         (if (as)
+                             (begin (vector-set! vec ctr v)
+                                    (set! ctr (remainder (+ ctr 1) n))
+                                    as)
+                             as)])))])
+    (lambda (v) (f v))))
+  
+
