@@ -58,20 +58,20 @@
                      (if (and (pair? (vector-ref vec i)) (equal? (car (vector-ref vec i)) v))
                             (vector-ref vec i)
                             (f (+ i 1)))))])
-           (f 0)))
+           (f 0)))  
 
 (define (cached-assoc xs n)
   (letrec ([vec (make-vector n #f)]
            [ctr 0]
            [f (lambda (v)
                 (let ([pair_or_false (vector-assoc v vec)])
-                  (cond [pair_or_false (begin (print "pair found in vector") pair_or_false)]
-                        [(let ([as (assoc v xs)])
-                         (if as
-                             (begin (vector-set! vec ctr v)
-                                    (set! ctr (remainder (+ ctr 1) n))
-                                    as)
-                             as))])))])
+                  (cond [pair_or_false pair_or_false]
+                        [#t (let ([as (assoc v xs)])
+                              (if as
+                                  (begin (vector-set! vec ctr as)
+                                         (set! ctr (remainder (+ ctr 1) n))
+                                         as)
+                                  #f))])))])
     (lambda (v) (f v))))
   
 
