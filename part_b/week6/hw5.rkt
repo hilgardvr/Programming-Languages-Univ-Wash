@@ -41,7 +41,7 @@
 ;; lookup a variable in an environment
 ;; Do NOT change this function
 (define (envlookup env str)
-  (cond [(null? env) (error "unbound variable during evaluation" str)]
+  (cond [(null? env)  (error "unbound variable during evaluation" str)]
         [(equal? (car (car env)) str) (cdr (car env))]
         [#t (envlookup (cdr env) str)]))
 
@@ -61,6 +61,22 @@
                        (int-num v2)))
                (error "MUPL addition applied to non-number")))]
         ;; CHANGE add more cases here
+        [(int? e)
+         e]
+        [(ifgreater? e)
+         (let ([v1 (eval-under-env (ifgreater-e1 e) env)]
+               [v2 (eval-under-env (ifgreater-e2 e) env)]
+               [v3 (eval-under-env (ifgreater-e3 e) env)]
+               [v4 (eval-under-env (ifgreater-e4 e) env)])
+           (if (and (int? v1)
+                    (int? v2))
+               (if (> (int-num v1) (int-num v2))
+                   v3
+                   v4)
+               (error "MUPL ifgreater applied to non-number")))]
+        [(mlet? e)
+         (let ([v (eval-under-env (mlet-var) env)]
+               [
         [#t (error (format "bad MUPL expression: ~v" e))]))
 
 ;; Do NOT change
