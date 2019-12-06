@@ -75,8 +75,9 @@
                    v4)
                (error "MUPL ifgreater applied to non-number")))]
         [(mlet? e)
-         (let ([v (eval-under-env (mlet-var) env)]
-               [
+         (let ([va (var (mlet-var e))]
+               [ex (eval-under-env (mlet-e e) env)])
+           (eval-under-env (mlet-body e) (cons (cons (var va) ex) env)))]
         [#t (error (format "bad MUPL expression: ~v" e))]))
 
 ;; Do NOT change
