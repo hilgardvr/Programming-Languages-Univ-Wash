@@ -43,7 +43,7 @@
 (define (envlookup env str)
   (cond [(null? env)  (error "unbound variable during evaluation" str)]
         [(equal? (car (car env)) str) (cdr (car env))]
-        [#t (envlookup (cdr env) str)]))
+        [#t (begin (println "#t") (envlookup (cdr env) str))]))
 
 ;; Do NOT change the two cases given to you.  
 ;; DO add more cases for other kinds of MUPL expressions.
@@ -75,9 +75,8 @@
                    v4)
                (error "MUPL ifgreater applied to non-number")))]
         [(mlet? e)
-         (let ([va (var (mlet-var e))]
-               [ex (eval-under-env (mlet-e e) env)])
-           (eval-under-env (mlet-body e) (cons (cons (var va) ex) env)))]
+         (let ([ex (eval-under-env (mlet-e e) env)])
+           (eval-under-env (mlet-body e) (cons (cons (mlet-var e) ex) env)))]
         [#t (error (format "bad MUPL expression: ~v" e))]))
 
 ;; Do NOT change
