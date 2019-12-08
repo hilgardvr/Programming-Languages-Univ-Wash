@@ -77,6 +77,39 @@
         [(mlet? e)
          (let ([ex (eval-under-env (mlet-e e) env)])
            (eval-under-env (mlet-body e) (cons (cons (mlet-var e) ex) env)))]
+        [(apair? e)
+         (apair (eval-under-env (apair-e1 e) env) (eval-under-env (apair-e2 e) env))]
+        [(fst? e)
+         (let ([ex (eval-under-env (fst-e e) env)])
+           (if (apair? ex)
+               (apair-e1 ex)
+               (error "fst applied to non-apair")))]
+        [(snd? e)
+         (let ([ex (eval-under-env (snd-e e) env)])
+           (if (apair? ex)
+               (apair-e2 ex)
+               (error "snd applied to non-apair")))]
+        [(aunit? e)
+         '()]
+        [(isaunit? e)
+         (if (aunit? e)
+             (int 1)
+             (int 0))]
+        [(fun? e)
+         (closure env e)]
+        [(closure? e)
+         e]
+        [(call? e)
+         (let ([cls (eval-under-env (call-funexp e) env)]
+               [arg (eval-under-env (call-actual e) env)])
+           (if (closure? cls)
+               (let* ([fun_name (fun-nameopt (closure-fun cls))]
+                     [fun_arg (fun-formal (closure-fun cls))]
+                     [fun_body (fun-body (closure-fun cls))]
+                     [arg_to_env (cons fun_arg arg)]
+                     [fun_to_env (cons fun_name cls)])
+                 (eval-under-env fun_body (cons arg_to_env (cons arg_to_env env))))
+               (error "call first arg not a clojure")))]
         [#t (error (format "bad MUPL expression: ~v" e))]))
 
 ;; Do NOT change
