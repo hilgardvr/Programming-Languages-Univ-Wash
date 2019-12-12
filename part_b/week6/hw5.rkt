@@ -90,7 +90,7 @@
                (apair-e2 ex)
                (error "snd applied to non-apair")))]
         [(aunit? e)
-         '()]
+         e]
         [(isaunit? e)
          (if (aunit? e)
              (int 1)
@@ -108,8 +108,9 @@
                      [fun_body (fun-body (closure-fun cls))]
                      [arg_to_env (cons fun_arg arg)]
                      [fun_to_env (cons fun_name cls)])
-                 (eval-under-env fun_body (cons arg_to_env (cons arg_to_env env))))
-               (error "call first arg not a clojure")))]
+                 (begin (println (cons fun_to_env (cons arg_to_env (cons arg_to_env env)))))
+                 (eval-under-env fun_body (cons fun_to_env (cons arg_to_env (cons arg_to_env env)))))
+               (error "call's first argument not a closure")))]
         [#t (error (format "bad MUPL expression: ~v" e))]))
 
 ;; Do NOT change
@@ -118,15 +119,28 @@
         
 ;; Problem 3
 
-(define (ifaunit e1 e2 e3) "CHANGE")
+(define (ifaunit e1 e2 e3)
+  (if (isaunit? e1)
+      e2
+      e3))
 
-(define (mlet* lstlst e2) "CHANGE")
+(define (mlet* lstlst e2)
+  (eval-under-env e2 lstlst))
 
-(define (ifeq e1 e2 e3 e4) "CHANGE")
+(define (ifeq e1 e2 e3 e4)
+  (if (and (int? e1) (int? e2))
+      (if (= (int-num e1) (int-num e2))
+          e3
+          e4)
+      (error "ifeq e1 or e2 in not of type int")))
 
 ;; Problem 4
-
-(define mupl-map "CHANGE")
+;;(struct fun  (nameopt formal body) #:transparent)
+;(struct closure (env fun) #:transparent)
+;(eval-exp (call (call mupl-map (fun #f "x" (add (var "x") (int 7)))) (apair (int 1) (aunit))))
+;> (eval-exp (call (eval-exp (call (eval-exp (fun "fmf" "mf" (fun "fml" "ml" (int 1)))) (int 2))) (int 3)))
+(define mupl-map
+  (fun "map_f" "f" (if (int? (var "f")) (var "f") (var "f"))))
 
 (define mupl-mapAddN 
   (mlet "map" mupl-map
