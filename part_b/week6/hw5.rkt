@@ -96,7 +96,7 @@
              (int 1)
              (int 0))]
         [(fun? e)
-         (closure env e)]
+         (closure env e)] 
         [(closure? e)
          e]
         [(call? e)
@@ -106,10 +106,10 @@
                (let* ([fun_name (fun-nameopt (closure-fun cls))]
                      [fun_arg (fun-formal (closure-fun cls))]
                      [fun_body (fun-body (closure-fun cls))]
+                     [fun_env (closure-env cls)]
                      [arg_to_env (cons fun_arg arg)]
                      [fun_to_env (cons fun_name cls)])
-                 (begin (println (cons fun_to_env (cons arg_to_env (cons arg_to_env env)))))
-                 (eval-under-env fun_body (cons fun_to_env (cons arg_to_env (cons arg_to_env env)))))
+                 (eval-under-env fun_body (cons fun_to_env (cons arg_to_env fun_env))))
                (error "call's first argument not a closure")))]
         [#t (error (format "bad MUPL expression: ~v" e))]))
 
@@ -140,7 +140,10 @@
 ;(eval-exp (call (call mupl-map (fun #f "x" (add (var "x") (int 7)))) (apair (int 1) (aunit))))
 ;> (eval-exp (call (eval-exp (call (eval-exp (fun "fmf" "mf" (fun "fml" "ml" (int 1)))) (int 2))) (int 3)))
 (define mupl-map
-  (fun "map_f" "f" (if (int? (var "f")) (var "f") (var "f"))))
+  (fun "map_f" "f" (fun "map_l" "l"
+                        (ifaunit (var "l")
+                                 (aunit)
+                                 (apair (call (var "f") (fst (var "l"))) (call (var "map_f") (snd (var "l"))))))))
 
 (define mupl-mapAddN 
   (mlet "map" mupl-map
