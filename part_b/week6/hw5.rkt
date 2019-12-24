@@ -43,7 +43,7 @@
 (define (envlookup env str)
   (cond [(null? env)  (error "unbound variable during evaluation" str)]
         [(equal? (car (car env)) str) (cdr (car env))]
-        [#t (begin (println "#t") (envlookup (cdr env) str))]))
+        [#t (envlookup (cdr env) str)]))
 
 ;; Do NOT change the two cases given to you.  
 ;; DO add more cases for other kinds of MUPL expressions.
@@ -65,14 +65,12 @@
          e]
         [(ifgreater? e)
          (let ([v1 (eval-under-env (ifgreater-e1 e) env)]
-               [v2 (eval-under-env (ifgreater-e2 e) env)]
-               [v3 (eval-under-env (ifgreater-e3 e) env)]
-               [v4 (eval-under-env (ifgreater-e4 e) env)])
+               [v2 (eval-under-env (ifgreater-e2 e) env)])
            (if (and (int? v1)
                     (int? v2))
                (if (> (int-num v1) (int-num v2))
-                   v3
-                   v4)
+                   (eval-under-env (ifgreater-e3 e) env)
+                   (eval-under-env (ifgreater-e4 e) env))
                (error "MUPL ifgreater applied to non-number")))]
         [(mlet? e)
          (let ([ex (eval-under-env (mlet-e e) env)])
@@ -83,16 +81,16 @@
          (let ([ex (eval-under-env (fst-e e) env)])
            (if (apair? ex)
                (apair-e1 ex)
-               (error "fst applied to non-apair")))]
+               (error "fst applied to non-apair" e ex)))]
         [(snd? e)
          (let ([ex (eval-under-env (snd-e e) env)])
            (if (apair? ex)
                (apair-e2 ex)
                (error "snd applied to non-apair")))]
         [(aunit? e)
-         e]
+         (aunit)]
         [(isaunit? e)
-         (if (aunit? e)
+         (if (aunit? (eval-under-env (isaunit-e e) env))
              (int 1)
              (int 0))]
         [(fun? e)
@@ -120,12 +118,13 @@
 ;; Problem 3
 
 (define (ifaunit e1 e2 e3)
-  (if (isaunit? e1)
-      e2
-      e3))
-
-(define (mlet* lstlst e2)
-  (eval-under-env e2 lstlst))
+  (ifgreater (isaunit e1) (int 0) e2 e3))
+  
+(define (mlet* prlst exp)
+  (if (null? prlst)
+      exp
+      (mlet (car (car prlst)) (cdr (car prlst)) (mlet* (cdr prlst) exp))))   
+  ;(eval-under-env e2 lstlst))
 
 (define (ifeq e1 e2 e3 e4)
   (if (and (int? e1) (int? e2))
@@ -141,10 +140,11 @@
 ;> (eval-exp (call (eval-exp (call (eval-exp (fun "fmf" "mf" (fun "fml" "ml" (int 1)))) (int 2))) (int 3)))
 (define mupl-map
   (fun "map_f" "f" (fun "map_l" "l"
-                        (ifaunit (var "l")
-                                 (aunit)
-                                 (apair (call (var "f") (fst (var "l"))) (call (var "map_f") (snd (var "l"))))))))
-
+                                (ifaunit (var "l")
+                                         (aunit)
+                                         (apair (call (var "f") (fst (var "l"))) (call (var "map_l") (snd (var "l"))))))))
+                                   
+  
 (define mupl-mapAddN 
   (mlet "map" mupl-map
         "CHANGE (notice map is now in MUPL scope)"))
