@@ -123,21 +123,13 @@
 (define (mlet* prlst exp)
   (if (null? prlst)
       exp
-      (mlet (car (car prlst)) (cdr (car prlst)) (mlet* (cdr prlst) exp))))   
-  ;(eval-under-env e2 lstlst))
+      (mlet (car (car prlst)) (cdr (car prlst)) (mlet* (cdr prlst) exp))))
 
 (define (ifeq e1 e2 e3 e4)
-  (if (and (int? e1) (int? e2))
-      (if (= (int-num e1) (int-num e2))
-          e3
-          e4)
-      (error "ifeq e1 or e2 in not of type int")))
+  (mlet* (list (cons "_x" e1) (cons "_y" e2))
+  (ifgreater (var "_x") (var "_y") e4 (ifgreater (var "_y") (var "_x") e4 e3))))
 
 ;; Problem 4
-;;(struct fun  (nameopt formal body) #:transparent)
-;(struct closure (env fun) #:transparent)
-;(eval-exp (call (call mupl-map (fun #f "x" (add (var "x") (int 7)))) (apair (int 1) (aunit))))
-;> (eval-exp (call (eval-exp (call (eval-exp (fun "fmf" "mf" (fun "fml" "ml" (int 1)))) (int 2))) (int 3)))
 (define mupl-map
   (fun "map_f" "f" (fun "map_l" "l"
                                 (ifaunit (var "l")
