@@ -203,7 +203,10 @@ fun eval_prog (e,env) =
             | Line(x, y) => eval_prog (Line(x * deltaX, y + deltaY), env)
             | VerticalLine x => eval_prog (VerticalLine (x + deltaX), env)
             | LineSegment(x1, y1, x2, y2) => eval_prog (LineSegment(x1 + deltaX, y1 + deltaY, x2 + deltaX, y2 + deltaY), env)
-            | _ => eval_prog (exp, env)
+            | Var v => eval_prog(Shift(deltaX, deltaY, eval_prog(Var(v), env)), env)
+            | Let(s, e1, e2) => eval_prog(Shift(deltaX, deltaY, eval_prog(Let(s, e1, e2), env)), env)
+            | Intersect(e1, e2) => eval_prog(Shift(deltaX, deltaY, eval_prog(Intersect(e1, e2), env)), env)
+            | Shift(sX, sY, sE) => eval_prog(Shift(deltaX, deltaY, eval_prog(Shift(sX, sY, sE), env)), env)
 (* CHANGE: Add a case for Shift expressions *)
 
 (* CHANGE: Add function preprocess_prog of type geom_exp -> geom_exp *)
