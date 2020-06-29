@@ -200,7 +200,7 @@ fun eval_prog (e,env) =
         case exp of
             NoPoints => eval_prog (NoPoints, env)
             | Point(x, y) => eval_prog (Point(x + deltaX, y + deltaY), env)
-            | Line(x, y) => eval_prog (Line(x * deltaX, y + deltaY), env)
+            | Line(x, y) => eval_prog (Line(x, y + deltaY - (x * deltaX)), env)
             | VerticalLine x => eval_prog (VerticalLine (x + deltaX), env)
             | LineSegment(x1, y1, x2, y2) => eval_prog (LineSegment(x1 + deltaX, y1 + deltaY, x2 + deltaX, y2 + deltaY), env)
             | Var v => eval_prog(Shift(deltaX, deltaY, eval_prog(Var(v), env)), env)

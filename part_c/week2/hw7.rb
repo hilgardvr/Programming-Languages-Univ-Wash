@@ -1,4 +1,4 @@
-# University of Washington, Programming Languages, Homework 7, hw7.rb 
+        # University of Washington, Programming Languages, Homework 7, hw7.rb 
 # (See also ML code)
 
 # a little language for 2D geometry objects
@@ -120,8 +120,16 @@ class Point < GeometryValue
   end
 
   def preprocess_prog
-    self.class.new(@x, @y)
+    self
   end
+
+  def eval_prog env
+    self
+  end
+
+  def shift(dx, dy)
+   self.class.new(@x + dx, @y + dy)
+  end 
 
 end
 
@@ -135,8 +143,17 @@ class Line < GeometryValue
   end
 
   def preprocess_prog
-    self.class.new(@m, @b)
+    self
   end
+
+  def eval_prog env
+    self
+  end
+
+  def shift(dx, dy)
+   self.class.new(@m, @b + dy - (@m * dx))
+  end 
+
 end
 
 class VerticalLine < GeometryValue
@@ -148,8 +165,16 @@ class VerticalLine < GeometryValue
   end
 
   def preprocess_prog
-    self.class.new(@x)
+    self
   end
+
+  def eval_prog env
+    self
+  end
+
+  def shift(dx, dy)
+   self.class.new(@x + dx)
+  end 
 end
 
 class LineSegment < GeometryValue
@@ -180,6 +205,14 @@ class LineSegment < GeometryValue
         end
     end
   end
+
+  def eval_prog env
+    self
+  end
+
+  def shift(dx, dy)
+   self.class.new(@x1 + dx, @y1 + dy, @x2 + dx, @y2 + dy)
+  end 
 end
 
 # Note: there is no need for getter methods for the non-value classes
@@ -194,6 +227,12 @@ class Intersect < GeometryExpression
 
   def preprocess_prog
     self.class.new(@e1, @e2)
+  end
+
+  def eval_prog env
+   @eval_e1 = @e1.eval_prog env
+   @eval_e2 = @e2.eval_prog env
+   self.class.new(@eval_e1, @eval_e2)
   end
 end
 
@@ -210,6 +249,12 @@ class Let < GeometryExpression
   def preprocess_prog
     self.class.new(@s, @e1, @e2)
   end
+
+  def eval_prog env
+   @eval_e1 = @e1.preprocess_prog.eval_prog env
+   @eval_e2 = @e2.preprocess_prog.eval_prog env
+   self.class.new(@eval_e1, @eval_e2)
+  end
 end
 
 class Var < GeometryExpression
@@ -225,7 +270,7 @@ class Var < GeometryExpression
   end
 
   def preprocess_prog
-    self.class.new(@s)
+    self
   end
 end
 
