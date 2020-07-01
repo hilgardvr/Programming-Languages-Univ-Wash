@@ -252,8 +252,7 @@ class Let < GeometryExpression
 
   def eval_prog env
    @eval_e1 = @e1.preprocess_prog.eval_prog env
-   @eval_e2 = @e2.preprocess_prog.eval_prog env
-   self.class.new(@eval_e1, @eval_e2)
+   @e2.preprocess_prog.eval_prog (env << [@s, @eval_e1])
   end
 end
 
