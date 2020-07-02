@@ -131,6 +131,9 @@ class Point < GeometryValue
    self.class.new(@x + dx, @y + dy)
   end 
 
+  def intersect other
+   Intersect.new(self.class.new(@x, @y), other)
+  end 
 end
 
 class Line < GeometryValue
@@ -154,6 +157,9 @@ class Line < GeometryValue
    self.class.new(@m, @b + dy - (@m * dx))
   end 
 
+  def intersect other
+   Intersect.new(self.class.new(@m, @b), other)
+  end 
 end
 
 class VerticalLine < GeometryValue
@@ -174,6 +180,10 @@ class VerticalLine < GeometryValue
 
   def shift(dx, dy)
    self.class.new(@x + dx)
+  end 
+
+  def intersect other
+   Intersect.new(self.class.new(@x), other)
   end 
 end
 
@@ -213,6 +223,10 @@ class LineSegment < GeometryValue
   def shift(dx, dy)
    self.class.new(@x1 + dx, @y1 + dy, @x2 + dx, @y2 + dy)
   end 
+
+  def intersect other
+   Intersect.new(self.class.new(@x1, @y1, @x2, @y2), other)
+  end 
 end
 
 # Note: there is no need for getter methods for the non-value classes
@@ -230,10 +244,11 @@ class Intersect < GeometryExpression
   end
 
   def eval_prog env
-   @eval_e1 = @e1.eval_prog env
-   @eval_e2 = @e2.eval_prog env
+   @eval_e1 = @e1.preprocess_prog.eval_prog env
+   @eval_e2 = @e2.preprocess_prog.eval_prog env
    self.class.new(@eval_e1, @eval_e2)
   end
+
 end
 
 class Let < GeometryExpression
@@ -284,5 +299,9 @@ class Shift < GeometryExpression
 
   def preprocess_prog
     self.class.new(@dx, @dy, e)
+  end
+
+  def eval_prog env
+    e.shift(@dx, @dy)
   end
 end
