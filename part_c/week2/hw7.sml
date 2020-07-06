@@ -79,17 +79,17 @@ fun intersect (v1,v2) =
       | (Line _, Point _) => intersect(v2,v1)
 
       | (Line (m1,b1), Line (m2,b2)) =>
-	if real_close(m1,m2) 
-	then (if real_close(b1,b2)
-	      then v1 (* same line *)
-	      else  NoPoints) (* parallel lines do not intersect *)
-	else 
-	    let (* one-point intersection *)
-		val x = (b2 - b1) / (m1 - m2)
-		val y = m1 * x + b1
-	    in
-		Point (x,y)
-	    end
+            if real_close(m1,m2) 
+            then (if real_close(b1,b2)
+                  then v1 (* same line *)
+                  else  NoPoints) (* parallel lines do not intersect *)
+            else 
+                let (* one-point intersection *)
+                val x = (b2 - b1) / (m1 - m2)
+                val y = m1 * x + b1
+                in
+                Point (x,y)
+                end
 
       | (Line (m1,b1), VerticalLine x2) => Point(x2, m1 * x2 + b1)
 
@@ -99,31 +99,31 @@ fun intersect (v1,v2) =
       | (VerticalLine _, Line _)  => intersect(v2,v1)
 
       | (VerticalLine x1, VerticalLine x2) =>
-	if real_close(x1,x2)
-	then v1 (* same line *)
-	else NoPoints (* parallel *)
+            if real_close(x1,x2)
+            then v1 (* same line *)
+            else NoPoints (* parallel *)
 
       | (VerticalLine _, LineSegment seg) => intersect(v2,v1)
 
       | (LineSegment seg, _) => 
-	(* the hard case, actually 4 cases because v2 could be a point,
-	   line, vertical line, or line segment *)
-	(* First compute the intersection of (1) the line containing the segment 
-           and (2) v2. Then use that result to compute what we need. *)
-	(case intersect(two_points_to_line seg, v2) of
-	    NoPoints => NoPoints 
-	  | Point(x0,y0) => (* see if the point is within the segment bounds *)
-	    (* assumes v1 was properly preprocessed *)
-	    let 
-		fun inbetween(v,end1,end2) =
-		    (end1 - epsilon <= v andalso v <= end2 + epsilon)
-		    orelse (end2 - epsilon <= v andalso v <= end1 + epsilon)
-		val (x1,y1,x2,y2) = seg
-	    in
-		if inbetween(x0,x1,x2) andalso inbetween(y0,y1,y2)
-		then Point(x0,y0)
-		else NoPoints
-	    end
+            (* the hard case, actually 4 cases because v2 could be a point,
+               line, vertical line, or line segment *)
+            (* First compute the intersection of (1) the line containing the segment 
+                   and (2) v2. Then use that result to compute what we need. *)
+            (case intersect(two_points_to_line seg, v2) of
+                NoPoints => NoPoints 
+              | Point(x0,y0) => (* see if the point is within the segment bounds *)
+                (* assumes v1 was properly preprocessed *)
+                let 
+                fun inbetween(v,end1,end2) =
+                    (end1 - epsilon <= v andalso v <= end2 + epsilon)
+                    orelse (end2 - epsilon <= v andalso v <= end1 + epsilon)
+                val (x1,y1,x2,y2) = seg
+                in
+                if inbetween(x0,x1,x2) andalso inbetween(y0,y1,y2)
+                then Point(x0,y0)
+                else NoPoints
+                end
 	  | Line _ => v1 (* so segment seg is on line v2 *)
 	  | VerticalLine _ => v1 (* so segment seg is on vertical-line v2 *)
 	  | LineSegment seg2 => 

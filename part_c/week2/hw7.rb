@@ -132,8 +132,39 @@ class Point < GeometryValue
   end 
 
   def intersect other
-   Intersect.new(self.class.new(@x, @y), other)
+    other.intersectPoint self.class.new(@x, @y)
   end 
+
+  def intersectNoPoint
+    NoPoint.new
+  end
+
+  def intersectPoint p
+    if real_close_point(p.x, p.y, @x, @y)
+      then p
+      else NoPoints.new
+    end
+  end
+
+  def intersectLine other
+   if real_close(@y, other.m * @x + other.b)
+     then self.class.new(@x, @y)
+     else NoPoints.new
+   end
+  end
+
+  def intersectVerticalLine other
+    if real_close(@x, other.x)
+      then self.class.new(@x, @y)
+      else NoPoints.new
+    end
+  end
+
+  def intersectLineSegment other
+    l = two_points_to_line(other, self.class.new(@x, @y))
+    l.intersectPoint(self.class.new(@x, @y))
+  end
+
 end
 
 class Line < GeometryValue
@@ -225,8 +256,17 @@ class LineSegment < GeometryValue
   end 
 
   def intersect other
-   Intersect.new(self.class.new(@x1, @y1, @x2, @y2), other)
+    other.intersectLineSegment self
   end 
+
+  def intersectPoint p
+  end
+
+  def intersectLine other
+  end
+
+  def intersectVerticalLine other
+  end
 end
 
 # Note: there is no need for getter methods for the non-value classes
@@ -246,7 +286,7 @@ class Intersect < GeometryExpression
   def eval_prog env
    @eval_e1 = @e1.preprocess_prog.eval_prog env
    @eval_e2 = @e2.preprocess_prog.eval_prog env
-   self.class.new(@eval_e1, @eval_e2)
+   @eval_e2.intersect @eval_e1
   end
 
 end
