@@ -156,10 +156,15 @@ class Point < GeometryValue
     end
   end
 
-  def intersectLineSegment other
-    l = two_points_to_line(other, self.class.new(@x, @y))
-    l.intersectPoint(self.class.new(@x, @y))
-  end
+#  def intersectLineSegment seg
+#    line_result = intersect(two_points_to_line(seg.x1,seg.y1,seg.x2,seg.y2))
+#    line_result.intersectWithSegmentAsLineResult seg
+#  end
+#  def intersectWithSegmentAsLineResult seg
+#  def intersectLineSegment other
+#    line = two_points_to_line(other.x1, other.y1, other.x2, other.y2)
+#    intersect(line)
+#  end
 
 end
 
@@ -213,10 +218,10 @@ class Line < GeometryValue
     Point.new(other.x, @m * other.x + @b)
   end
 
-  def intersectLineSegment other
-    l = two_points_to_line(other, self.class.new(@x, @y))
-    l.intersectLine(self.class.new(@x, @y))
-  end
+#  def intersectLineSegment other
+#    line = two_points_to_line(other.x1, other.y1, other.x2, other.y2)
+#    intersect(line)
+#  end
 end
 
 class VerticalLine < GeometryValue
@@ -240,8 +245,31 @@ class VerticalLine < GeometryValue
   end 
 
   def intersect other
-   Intersect.new(self.class.new(@x), other)
+    other.intersectVertical self.class.new(@x)
   end 
+
+  def intersectPoint p
+    if real_close(p.x, @x)
+      then p
+      else NoPoints.new
+    end
+  end
+
+  def intersectLine other
+    Point.new(@x, other.m * @x + other.b)
+  end
+
+  def intersectVerticalLine other
+    if real_close(@x, other.x)
+      then self.class.new(@x)
+      else NoPoints.new
+    end
+  end
+
+#  def intersectLineSegment other
+#    line = two_points_to_line(other.x1, other.y1, other.x2, other.y2)
+#    intersect(line)
+#  end
 end
 
 class LineSegment < GeometryValue
