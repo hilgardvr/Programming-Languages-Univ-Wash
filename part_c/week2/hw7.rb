@@ -156,15 +156,16 @@ class Point < GeometryValue
     end
   end
 
-#  def intersectLineSegment seg
-#    line_result = intersect(two_points_to_line(seg.x1,seg.y1,seg.x2,seg.y2))
-#    line_result.intersectWithSegmentAsLineResult seg
-#  end
-#  def intersectWithSegmentAsLineResult seg
-#  def intersectLineSegment other
-#    line = two_points_to_line(other.x1, other.y1, other.x2, other.y2)
-#    intersect(line)
-#  end
+  private def inbetween(v, end1, end2)
+    ((((end1 - GeometryExpression::Epsilon) <= v) && (v <= (end2 + GeometryExpression::Epsilon))) || (((end2 - GeometryExpression::Epsilon) <= v) && (v <= (end1 + GeometryExpression::Epsilon))))
+  end
+
+  def intersectWithSegmentAsLineResult seg
+    if (inbetween(@x, seg.x1, seg.x2) and inbetween(@y, seg.y1, seg.y2))
+    then self.class.new(@x, @y)
+    else NoPoints.new
+    end
+  end
 
 end
 
@@ -218,10 +219,10 @@ class Line < GeometryValue
     Point.new(other.x, @m * other.x + @b)
   end
 
-#  def intersectLineSegment other
-#    line = two_points_to_line(other.x1, other.y1, other.x2, other.y2)
-#    intersect(line)
-#  end
+  def intersectWithSegmentAsLineResult seg
+    seg 
+  end
+
 end
 
 class VerticalLine < GeometryValue
@@ -266,10 +267,9 @@ class VerticalLine < GeometryValue
     end
   end
 
-#  def intersectLineSegment other
-#    line = two_points_to_line(other.x1, other.y1, other.x2, other.y2)
-#    intersect(line)
-#  end
+  def intersectWithSegmentAsLineResult seg
+    seg
+  end
 end
 
 class LineSegment < GeometryValue
@@ -293,7 +293,7 @@ class LineSegment < GeometryValue
         if @x1 > @x2
         then LineSegment.new(@x2, @y2, @x1, @y1)
         else
-            if real_close(@x1, @x2) and @y1 > @y2
+            if real_close(@x1, @x2) and (@y1 > @y2)
             then LineSegment.new(@x2, @y2, @x1, @y1)
             else LineSegment.new(@x1, @y1, @x2, @y2)
             end
@@ -310,16 +310,53 @@ class LineSegment < GeometryValue
   end 
 
   def intersect other
-    other.intersectLineSegment self
+    other.intersectLineSegment(self.class.new(@x1, @y1, @x2, @y2))
   end 
 
   def intersectPoint p
+    p.intersectLineSegment(self.class.new(@x1, @y1, @x2, @y2))
   end
 
-  def intersectLine other
+  def intersectLine l
+    l.intersectLineSegment(self.class.new(@x1, @y1, @x2, @y2))
   end
 
-  def intersectVerticalLine other
+  def intersectVerticalLine vl
+    vl.intersectLineSegment(self.class.new(@x1, @y1, @x2, @y2))
+  end
+
+
+  def intersectWithSegmentAsLineResult seg
+    if (real_close(seg.x1, seg.x2)) 
+      then                                          #vertical line
+        segs = if (seg.y1 < @y1) then [seg, self] else [self, seg] end
+        if (real_close(segs[0].y2, segs[1].y1)) 
+          then Point.new(segs[0].x2, segs[0].y2)    #touching vl's
+          else
+            if (segs[0].y2 < segs[1].y1)
+              then NoPoints.new                     #no overlap
+              else                                  #overlapping
+                if (segs[0].y2 > segs[1].y2)
+                  then self.class.new(segs[1].x1, segs[1].y1, segs[1].x2, segs[1].y2)    #1 inside 0
+                  else self.class.new(segs[1].x1, segs[1].y1, segs[0].x2, segs[0].y2)    #overlapping
+                end
+            end
+        end
+      else                                          #non-vertical line
+        segs = if (seg.x1 < @x1) then [seg, self] else [self, seg] end
+        if (real_close(segs[0].x2, segs[1].x1))
+          then Pont.new(segs[0].x2, segs[0].y2)     #touching l's
+          else
+            if (segs[0].x2 < segs[1].x1)
+              then NoPoints.new                     #no overlap
+              else
+                if (segs[0].x2 > segs[1].x2)
+                  then self.class.new(segs[1].x1, segs[1].y1, segs[1].x2, segs[1].y2)   #1 inside 0
+                  else self.class.new(segs[1].x1, segs[1].y1, segs[0].x2, segs[0].y2)   #overlapping
+                end
+            end
+        end
+    end
   end
 end
 
@@ -360,8 +397,9 @@ class Let < GeometryExpression
   end
 
   def eval_prog env
-   @eval_e1 = @e1.preprocess_prog.eval_prog env
-   @e2.preprocess_prog.eval_prog (env << [@s, @eval_e1])
+    eval_e1 = @e1.preprocess_prog.eval_prog(env)
+    #updated_env = env.map(&:clone)
+    @e2.preprocess_prog.eval_prog(env << [@s, eval_e1])
   end
 end
 
